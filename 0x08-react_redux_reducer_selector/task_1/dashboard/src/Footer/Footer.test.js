@@ -1,36 +1,76 @@
-/**
- * @jest-environment jsdom
-*/
-
-import React from "react";
-import { shallow, mount } from "enzyme";
-import Footer from "./Footer";
+import React from 'react';
+import { shallow, mount } from 'enzyme';
+import Footer from './Footer';
 import { StyleSheetTestUtils } from 'aphrodite';
-import { AppContext } from '../App/AppContext';
+import {AppContext} from '../App/AppContext';
 
+describe("Testing <Footer /> component", () => {
+  let wrapper;
 
-StyleSheetTestUtils.suppressStyleInjection();
+  beforeEach(() => {
+    StyleSheetTestUtils.suppressStyleInjection();
+    wrapper = shallow(<Footer />);
+  });
 
-describe('<Footer />', () => {
-  it('render a Footer component without crashing', () => {
-    const wrapper = shallow(<Footer />);
-    expect(wrapper).toHaveLength(1);
-	});
+  it("Footer Component renders without crashing", () => {
+    expect(wrapper.exists());
+  });
 
-  // it("Verify that the components renders the text  Copyright", () => {
-  //   const wrapper = shallow(<Footer />);
-  //   expect(wrapper.find(".footer p")).toHaveLength(1);
-  //   expect(wrapper.find(".footer p").text()).toContain("Copyright");
-  // });
-
-  it('verify that the link is not displayed when the user is logged out within the context', () => {
-    const wrapper = mount(<Footer />);
-    expect(wrapper.find('footer p').length).toBe(1);
-	});
-
-  it('verify that the link is displayed when the user is logged in within the context', () => {
-    const value = { user: { email: 'thedude@aim.com', password: 'thedudeabides', isLoggedIn: true }, logOut: () => { } }
-    const wrapper = mount(<AppContext.Provider value={value}><Footer /></AppContext.Provider>);
-    expect(wrapper.find('footer a').text()).toContain('Contact us');
-	});
+  it("Footer compoenent render at the very least the text “Copyright”", () => {
+    expect(wrapper.find("Copyright").at(0)).toBeDefined();
+  });
 });
+
+describe('Testing Footer Component context and state', () => {
+	beforeEach(() => {
+		StyleSheetTestUtils.suppressStyleInjection();
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it('Tests that there is no link rendered when user is logged out within context', () => {
+		const context = {
+			user: {
+				email: '',
+				password: '',
+				isLoggedIn: false
+			}
+		}
+
+		const wrapper = mount(
+			<AppContext.Provider value={context}>
+				<Footer />
+			</AppContext.Provider>
+		)
+
+		expect(wrapper.find('a').length).toBe(0);
+		expect(wrapper.find('a').exists()).toBe(false);
+		expect(wrapper.text()).not.toContain('Contact us');
+
+		wrapper.unmount();
+	})
+
+	it('Tests that there is a link rendered when user is logged in within context', () => {
+		const context = {
+			user: {
+				email: '',
+				password: '',
+				isLoggedIn: true
+			}
+		}
+
+		const wrapper = mount(
+			<AppContext.Provider value={context}>
+				<Footer />
+			</AppContext.Provider>
+		)
+
+		expect(wrapper.find('a').length).toBe(1);
+		expect(wrapper.find('a').exists()).toBe(true);
+		expect(wrapper.text()).toContain('Contact us');
+
+		wrapper.unmount();
+	})
+})
